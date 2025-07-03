@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Plataforma Académica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .btn {
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #1b5dbf;
+        }
+
+        .link {
+            margin-top: 15px;
+        }
+    </style>
+    <script src="jquery-3.3.1.min.js"></script>
+</head>
+
+<body>
+    <div class="box">
+        <h2>🔐 Login</h2>
+        <form id="loginForm">
+            <input id="username" type="text" name="username" placeholder="Nome de utilizador" required />
+            <input id="password" type="password" name="password" placeholder="Palavra-passe" required />
+            <input class="btn" type="submit" value="Entrar" />
+        </form>
+        <div class="link">
+            <a href="criar.html">🆕 Criar Conta</a>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#loginForm").submit(function (e) {
+                e.preventDefault();
+                const username = $("#username").val();
+                const password = $("#password").val();
+
+                $.post("/login", { username, password }, function (data) {
+                    if (data.success) {
+                        window.location.href = "pagina.html";
+                    } else {
+                        alert("Login inválido");
+                    }
+                }).fail(function () {
+                    alert("Erro na ligação ao servidor");
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

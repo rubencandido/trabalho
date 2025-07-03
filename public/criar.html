@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Conta</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #c2e9fb, #a1c4fd);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 400px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .btn {
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #1b5dbf;
+        }
+
+        .link {
+            margin-top: 20px;
+        }
+
+        p {
+            margin-top: 15px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h2>🆕 Criar Nova Conta</h2>
+        <form id="registoForm">
+            <input type="text" name="nome" placeholder="Nome de utilizador" required />
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="password" name="pass" placeholder="Palavra-passe" required />
+            <button type="submit" class="btn">Criar Conta</button>
+        </form>
+        <p id="mensagem"></p>
+        <div class="link">
+            <a href="index.html">⬅️ Voltar ao Login</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("registoForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const dados = {
+                nome: formData.get("nome"),
+                email: formData.get("email"),
+                pass: formData.get("pass")
+            };
+
+            try {
+                const resp = await fetch('/criar-utilizador', {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dados)
+                });
+
+                const res = await resp.json();
+                document.getElementById("mensagem").innerText = res.success
+                    ? "✅ Conta criada com sucesso!"
+                    : "❌ Erro ao criar conta.";
+            } catch (err) {
+                document.getElementById("mensagem").innerText = "⚠️ Erro de ligação ao servidor.";
+            }
+        });
+    </script>
+</body>
+
+</html>

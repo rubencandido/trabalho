@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Minhas Avaliações</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #cfd9df, #e2ebf0);
+            padding: 60px;
+            text-align: center;
+        }
+
+        .box {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #2d89ef;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #2d89ef;
+            color: white;
+            text-align: left;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .pendente {
+            color: orange;
+        }
+
+        .concluido {
+            color: green;
+        }
+
+        .btn {
+            background-color: #2d89ef;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #1b5dbf;
+        }
+
+        a.voltar {
+            display: block;
+            margin-top: 25px;
+            color: #2d89ef;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a.voltar:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h2>📋 Minhas Avaliações</h2>
+        <table id="tabelaTrabalhos">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Estado</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Conteúdo gerado via JS -->
+            </tbody>
+        </table>
+        <a class="voltar" href="pagina.html">⬅️ Voltar à Página Principal</a>
+    </div>
+
+    <script>
+        async function carregarTrabalhos() {
+            try {
+                const response = await fetch('/trabalhos');
+                const dados = await response.json();
+
+                const tbody = document.querySelector("#tabelaTrabalhos tbody");
+                tbody.innerHTML = "";
+
+                dados.forEach(trabalho => {
+                    const tr = document.createElement("tr");
+
+                    const estado = trabalho.avaliado ? "✅ Avaliado" : "⏳ Pendente";
+                    const classe = trabalho.avaliado ? "concluido" : "pendente";
+
+                    tr.innerHTML = `
+                        <td>${trabalho.titulo}</td>
+                        <td class="status ${classe}">${estado}</td>
+                        <td>
+                            ${trabalho.linkFeedback
+                                ? `<a class="btn" href="${trabalho.linkFeedback}" target="_blank">Ver</a>`
+                                : '—'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar trabalhos:", err);
+            }
+        }
+
+        carregarTrabalhos();
+    </script>
+</body>
+
+</html>

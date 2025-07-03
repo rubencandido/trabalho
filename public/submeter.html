@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Submeter Trabalho</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 450px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        .btn {
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #1b5dbf;
+        }
+
+        p {
+            margin-top: 15px;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #2d89ef;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h2>📤 Submeter Novo Trabalho</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="text" name="titulo" placeholder="Título do trabalho" required />
+            <textarea name="descricao" placeholder="Descrição (opcional)"></textarea>
+            <input type="file" name="ficheiro" required />
+            <button type="submit" class="btn">Submeter</button>
+        </form>
+        <p id="mensagem"></p>
+        <a href="pagina.html">⬅️ Voltar à Página Principal</a>
+    </div>
+
+    <script>
+        const form = document.getElementById("uploadForm");
+        const msg = document.getElementById("mensagem");
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    msg.innerText = "✅ Trabalho submetido com sucesso!";
+                    form.reset();
+                } else {
+                    msg.innerText = "❌ Erro ao submeter trabalho.";
+                }
+            } catch (err) {
+                msg.innerText = "⚠️ Erro de ligação ao servidor.";
+            }
+        });
+    </script>
+</body>
+
+</html>
