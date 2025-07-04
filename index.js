@@ -128,3 +128,37 @@ app.get('/trabalhos', async (req, res) => {
 app.listen(port, () => {
   console.log(`🚀 Servidor a correr na porta ${port}`);
 });
+
+
+
+/*const { BlobServiceClient } = require('@azure/storage-blob');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
+async function uploadImageToBlobStorage(imageBuffer, imageName, mimeType = 'application/octet-stream') {
+  const connectionString = process.env.IMG_STORAGE;
+
+  if (!connectionString) {
+    console.warn("⚠️ Connection string IMG_STORAGE não encontrada.");
+    return null;
+  }
+
+  try {
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    const containerClient = blobServiceClient.getContainerClient('imagens');
+    await containerClient.createIfNotExists();
+
+    const blockBlobClient = containerClient.getBlockBlobClient(imageName);
+    await blockBlobClient.uploadData(imageBuffer, {
+      blobHTTPHeaders: { blobContentType: mimeType }
+    });
+
+    console.log(`✅ Upload concluído: ${blockBlobClient.url}`);
+    return blockBlobClient.url;
+  } catch (error) {
+    console.error("💥 Erro no upload para Blob Storage:", error.message);
+    return null;
+  }
+}
+*/
+
