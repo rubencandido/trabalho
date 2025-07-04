@@ -27,13 +27,21 @@
         h1 {
             color: #2d89ef;
             margin-bottom: 30px;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin: 15px auto;
             padding: 14px 28px;
-            width: 100%;
+            width: calc(100% - 56px);
+            max-width: 300px;
             background-color: #2d89ef;
             color: white;
             border: none;
@@ -42,6 +50,8 @@
             font-size: 16px;
             cursor: pointer;
             text-decoration: none;
+            transition: background-color 0.3s ease;
+            gap: 10px;
         }
 
         .btn:hover {
@@ -52,10 +62,18 @@
 
 <body>
     <div class="box">
-        <h1>🎓 Plataforma Académica</h1>
-        <a class="btn" href="submeter.html">📤 Submeter Trabalho</a>
-        <a class="btn" href="avaliacoes.html">📋 Ver Avaliações</a>
-        <a class="btn" href="logout.html">🚪 Terminar Sessão</a>
+        <h1>
+            <span style="font-size: 32px;">🎓</span> Plataforma Académica
+        </h1>
+        <a class="btn" href="submeter.html">
+            <span style="font-size: 20px;">📤</span> Submeter Trabalho
+        </a>
+        <a class="btn" href="avaliacoes.html">
+            <span style="font-size: 20px;">📋</span> Ver Avaliações
+        </a>
+        <a class="btn" href="logout.html">
+            <span style="font-size: 20px;">🚪</span> Terminar Sessão
+        </a>
     </div>
 </body>
 
