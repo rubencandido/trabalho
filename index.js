@@ -1,82 +1,130 @@
 const express = require('express');
-const multer = require('multer');
-const crypto = require('crypto');
-const { BlobServiceClient, StorageSharedKeyCredential, generateBlobSASQueryParameters, ContainerSASPermissions } = require('@azure/storage-blob');
 const { CosmosClient } = require('@azure/cosmos');
 const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Cosmos DB
-const cosmos = new CosmosClient({
-  endpoint: "https://basedadostrabalho.documents.azure.com:443/",
-  key: "AQUI_A_KEY_DO_COSMOS"
-});
+// Cosmos DB config
+const endpoint = "https://basedadostrabalho.documents.azure.com:443/";
+const key = "ffN5IHmRT9Nxe2GGslV8GD7A61Joed3IT7p0OwxMYHzbte05YJyIjJA1NYbi8X4xZaBEh1Fx0j6aACDbC1Fh6A==";
 const databaseId = 'trabalho';
-const trabalhosContainerId = 'trabalhos';
 const utilizadoresContainerId = 'utilizador';
+const trabalhosContainerId = 'trabalhos';
 
-// Azure Storage com acesso direto
-const accountName = 'miniprojeto';
-const accountKey = 'lGFDdXuwQSpPmbTRXCb5kQzeBlQtwDV/GnMkv6Fy3tX+n/EhkUmEX5mYu+loeVzDFNZ3r5pAZYzZ+AStS1HDYw==';
-const containerName = 'imagens';
+const client = new CosmosClient({ endpoint, key });
 
-const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
-const blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net`, sharedKeyCredential);
+// Página inicial
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-// Multer config
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+// Rota manual para outras páginas
+app.get('/pagina.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'pagina.html'));
+});
 
-// Upload com SAS
-app.post('/upload-trabalho', upload.single('ficheiro'), async (req, res) => {
+app.get('/logout.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'logout.html'));
+});
+
+app.get('/submeter.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'submeter.html'));
+});
+
+app.get('/avaliacoes.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'avaliacoes.html'));
+});
+
+app.get('/criar.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'criar.html'));
+});
+
+// Endpoint de login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  console.log("⚠️ [LOGIN RECEBIDO]", username, password);
+
   try {
-    const { nomeTrabalho, id_utilizador } = req.body;
-    const file = req.file;
-    if (!file || !id_utilizador || !nomeTrabalho) return res.status(400).send('Dados em falta');
+    const database = client.database(databaseId);
+    const container = database.container(utilizadoresContainerId);
 
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const blobName = `${id_utilizador}-${Date.now()}-${file.originalname}`;
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    const query = {
+      query: "SELECT * FROM c WHERE c.nome = @username AND c.pass = @password",
+      parameters: [
+        { name: "@username", value: username },
+        { name: "@password", value: password }
+      ]
+    };
 
-    await blockBlobClient.uploadData(file.buffer);
+    const { resources } = await container.items.query(query).fetchAll();
 
-    // Gerar SAS
-    const expiresOn = new Date(new Date().valueOf() + 60 * 60 * 1000); // 1 hora
-    const sasToken = generateBlobSASQueryParameters({
-      containerName,
-      blobName,
-      permissions: ContainerSASPermissions.parse("r"),
-      expiresOn
-    }, sharedKeyCredential).toString();
-
-    const sasUrl = `${blockBlobClient.url}?${sasToken}`;
-
-    // Guardar na BD
-    const container = cosmos.database(databaseId).container(trabalhosContainerId);
-    await container.items.create({
-      id: crypto.randomUUID(),
-      id_utilizador,
-      titulo: nomeTrabalho,
-      avaliado: false,
-      linkFeedback: sasUrl,
-      criadoEm: new Date().toISOString()
-    });
-
-    res.status(200).json({ message: 'Upload feito com sucesso!', url: sasUrl });
+    if (resources.length > 0) {
+      console.log("✅ Login válido");
+      res.json({ success: true });
+    } else {
+      console.log("❌ Login inválido");
+      res.json({ success: false });
+    }
   } catch (err) {
-    console.error('Erro no upload:', err.message);
-    res.status(500).send('Erro no upload.');
+    console.error("💥 Erro na BD:", err);
+    res.status(500).json({ success: false });
   }
 });
 
-// Iniciar
+// Endpoint para criar utilizador
+app.post('/criar-utilizador', async (req, res) => {
+  const { nome, email, pass } = req.body;
+
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(utilizadoresContainerId);
+
+    // Verificar se o utilizador já existe
+    const { resources } = await container.items.query({
+      query: "SELECT * FROM c WHERE c.nome = @nome",
+      parameters: [{ name: "@nome", value: nome }]
+    }).fetchAll();
+
+    if (resources.length > 0) {
+      return res.json({ success: false, message: "Utilizador já existe" });
+    }
+
+    const novo = { nome, email, pass };
+    await container.items.create(novo);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("❌ Erro ao criar utilizador:", err);
+    res.status(500).json({ success: false });
+  }
+});
+
+// Endpoint para obter trabalhos
+app.get('/trabalhos', async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(trabalhosContainerId);
+
+    const query = {
+      query: "SELECT c.titulo, c.avaliado, c.linkFeedback FROM c"
+    };
+
+    const { resources } = await container.items.query(query).fetchAll();
+    res.json(resources);
+  } catch (err) {
+    console.error("❌ Erro ao obter trabalhos:", err);
+    res.status(500).json({ success: false });
+  }
+});
+
+// Iniciar servidor
 app.listen(port, () => {
   console.log(`🚀 Servidor a correr na porta ${port}`);
 });
